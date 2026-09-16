@@ -1,0 +1,11 @@
+{
+	"id": "readest-extractor",
+	"name": "Readest Extractor",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "A plugin that extracts the properties of your book in Readest",
+	"author": "RenzDureza",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": true
+}
