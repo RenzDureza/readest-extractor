@@ -8,15 +8,22 @@ export class ReadestImporter {
 		const books = await this.reader.getBooks();
 		const importedBooks: ImportedBook[] = [];
 		for (const book of books) {
-			let config: ReadestBookConfig | undefined;
+			let config;
 
 			try {
 				config = await this.reader.getBookConfig(book);
-			} catch (err) {
-				console.warn(
-					`[Readest Extractor] No configuration found for "${book.title}".`,
-					err,
-				);
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					'code' in error &&
+					error.code === 'ENOENT'
+				) {
+					console.info(
+						`[Readest Extractor] "${book.title}" has no configuration yet.`,
+					);
+				} else {
+					throw error;
+				}
 			}
 
 			const annotations = (config?.booknotes ?? [])
@@ -30,15 +37,21 @@ export class ReadestImporter {
 				}));
 
 			const rawProgress = config?.progress ?? book.progress;
+			const rawAuthors = book.metadata?.author ?? book.author;
+			const authors = Array.isArray(rawAuthors)
+				? rawAuthors
+				: rawAuthors
+					? [rawAuthors]
+					: [];
 
 			const importedBook: ImportedBook = {
 				bookHash: book.hash,
 				metaHash: book.metaHash,
 				title: book.title,
-				authors:
-					book.metadata?.author ?? (book.author ? [book.author] : []),
+				authors,
 				format: book.format,
 				published: book.metadata?.published,
+				publisher: book.metadata?.publisher,
 				description: book.metadata?.description,
 				progress: rawProgress
 					? {

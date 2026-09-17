@@ -1,7 +1,7 @@
 export interface ReadestMetadata {
 	identifier?: string;
 	title?: string;
-	author?: string[];
+	author?: string[] | string;
 	publisher?: string;
 	published?: string;
 	description?: string;
@@ -12,7 +12,7 @@ export interface ReadestBook {
 	metaHash?: string;
 	format?: string;
 	title: string;
-	author?: string;
+	author?: string[] | string;
 	groupId?: string;
 	groupName?: string | null;
 	tags?: string[] | null;
@@ -70,6 +70,7 @@ export interface ImportedBook {
 	format?: string;
 	languages?: string[];
 	published?: string;
+	publisher?: string;
 	description?: string;
 	progress?: {
 		current: number;

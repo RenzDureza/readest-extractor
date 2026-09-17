@@ -3,6 +3,8 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { ReadestLibraryReader } from './readest/library-reader';
 import { ReadestImporter } from './readest/importer';
+import { renderBookNote } from './markdown/book-renderer';
+import { BookNoteWriter } from './obsidian/book-note-writer';
 
 export default class ReadestExtractorPlugin extends Plugin {
 	async onload(): Promise<void> {
@@ -31,9 +33,27 @@ export default class ReadestExtractorPlugin extends Plugin {
 		try {
 			const books = await importer.importBooks();
 
+			if (books.length === 0) {
+				new Notice('No Readest books found.');
+				return;
+			}
+
 			for (const book of books) {
 				try {
+					const markdown = renderBookNote(book);
+					const writer = new BookNoteWriter(this.app.vault);
+					const createdFile = await writer.createBookNote(
+						book,
+						markdown,
+					);
 					new Notice(`Book Name: ${book.title}`);
+					console.log(renderBookNote(book));
+
+					if (createdFile) {
+						new Notice(`Created ${createdFile.path}`);
+					} else {
+						new Notice(`A note for ${book.title} already exists.`);
+					}
 				} catch (error) {
 					console.warn(
 						`[Readest Extractor] Could not read ${book.title}`,
