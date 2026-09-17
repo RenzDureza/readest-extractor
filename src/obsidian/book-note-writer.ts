@@ -1,10 +1,10 @@
-import { normalizePath, Vault, TFile } from 'obsidian';
+import { normalizePath, Vault, TFile, MetadataCache } from 'obsidian';
 import { ImportedBook } from '../readest/types';
-import { title } from 'process';
 
 export class BookNoteWriter {
 	constructor(
 		private readonly vault: Vault,
+		private readonly metadataCache: MetadataCache,
 		private readonly outputFolder = 'Books',
 	) {}
 
@@ -16,6 +16,15 @@ export class BookNoteWriter {
 
 		const filename = this.sanitizeFilename(book.title);
 		const filePath = normalizePath(`${this.outputFolder}/${filename}.md`);
+		const existingBookNote = this.findBookNote(book.bookHash);
+
+		if (existingBookNote) {
+			console.info(
+				`[Readest Extractor] Book note already exists: ${existingBookNote.path}`,
+			);
+
+			return undefined;
+		}
 
 		const existingFile = this.vault.getAbstractFileByPath(filePath);
 		if (existingFile) {
@@ -37,5 +46,15 @@ export class BookNoteWriter {
 
 	private sanitizeFilename(title: string): string {
 		return title.replace(/[\\/:*?"<>|]/g, '-').trim();
+	}
+
+	private findBookNote(bookHash: string): TFile | undefined {
+		const markdownFiles = this.vault.getMarkdownFiles();
+
+		return markdownFiles.find((file) => {
+			const cache = this.metadataCache.getFileCache(file);
+
+			return cache?.frontmatter?.readest_book_hash === bookHash;
+		});
 	}
 }
