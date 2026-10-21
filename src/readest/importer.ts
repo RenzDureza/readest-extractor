@@ -8,7 +8,7 @@ export class ReadestImporter {
 		const books = await this.reader.getBooks();
 		const importedBooks: ImportedBook[] = [];
 		for (const book of books) {
-			let config;
+			let config: ReadestBookConfig | undefined;
 
 			try {
 				config = await this.reader.getBookConfig(book);
@@ -33,7 +33,11 @@ export class ReadestImporter {
 					text: annotation.text,
 					note: annotation.note ?? '',
 					page: annotation.page,
+					cfi: annotation.cfi,
 					color: annotation.color,
+					style: annotation.style,
+					createdAt: annotation.createdAt,
+					updatedAt: annotation.updatedAt,
 				}));
 
 			const rawProgress = config?.progress ?? book.progress;
