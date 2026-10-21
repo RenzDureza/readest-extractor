@@ -28,4 +28,9 @@ export class ReadestLibraryReader {
 		const content = await readFile(configFile, 'utf8');
 		return JSON.parse(content) as ReadestBookConfig;
 	}
+
+	async getBookCover(book: ReadestBook): Promise<string> {
+		const coverPath = path.join(this.libraryPath, book.hash, 'cover.png');
+		return coverPath;
+	}
 }
