@@ -38,18 +38,18 @@ export default class ReadestExtractorPlugin extends Plugin {
 				return;
 			}
 
+			const writer = new BookNoteWriter(
+				this.app.vault,
+				this.app.metadataCache,
+			);
+
 			for (const book of books) {
 				try {
 					const markdown = renderBookNote(book);
-					const writer = new BookNoteWriter(
-						this.app.vault,
-						this.app.metadataCache,
-					);
 					const createdFile = await writer.createBookNote(
 						book,
 						markdown,
 					);
-					new Notice(`Book Name: ${book.title}`);
 					// console.log(renderBookNote(book));
 
 					if (createdFile) {
