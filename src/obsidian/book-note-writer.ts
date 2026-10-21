@@ -1,5 +1,6 @@
 import { normalizePath, Vault, TFile, MetadataCache } from 'obsidian';
 import { ImportedBook } from '../readest/types';
+import { fileURLToPath } from 'node:url';
 
 export class BookNoteWriter {
 	constructor(
@@ -17,6 +18,7 @@ export class BookNoteWriter {
 		const filename = this.sanitizeFilename(book.title);
 		const filePath = normalizePath(`${this.outputFolder}/${filename}.md`);
 		const existingBookNote = this.findBookNote(book.bookHash);
+		// const existingAnnotation = this.findAnnotation(book.annotations[0]?.id);
 
 		if (existingBookNote) {
 			console.info(
@@ -55,6 +57,15 @@ export class BookNoteWriter {
 			const cache = this.metadataCache.getFileCache(file);
 
 			return cache?.frontmatter?.readest_book_hash === bookHash;
+		});
+	}
+
+	private findAnnotation(annotationId: string): TFile | undefined {
+		const markdownFiles = this.vault.getMarkdownFiles();
+
+		return markdownFiles.find((file) => {
+			const cache = this.metadataCache.getFileCache(file);
+			return cache?.frontmatter?.readest_book_hash === annotationId;
 		});
 	}
 }
