@@ -116,9 +116,6 @@ related phase.
 - [x] Generate YAML properties safely.
 - [x] Complete metadata and progress rendering.
 - [ ] Group annotations by page, with an unknown-location fallback.
-- [ ] Improve annotation reading order.
-- [ ] Render annotation notes and multiline highlights.
-- [ ] Add stable annotation block IDs.
 - [ ] Add generated-section markers and a personal writing area.
 
 ### Safe note creation and import
@@ -126,7 +123,6 @@ related phase.
 - [x] Add a create-only Vault API writer foundation.
 - [x] Add initial book-hash lookup and filename-collision checks.
 - [ ] Harden filename sanitization and collision reporting.
-- [ ] Add and test a single-book creation command.
 - [ ] Confirm repeated imports do not create duplicates.
 - [ ] Add the full library import command.
 - [ ] Report created, skipped, and failed counts.
@@ -149,16 +145,6 @@ related phase.
 - [ ] Configure output and cover folders.
 - [ ] Import covers through the Vault API.
 - [ ] Avoid duplicate cover files and handle missing covers.
-
-### Navigation, testing, and release
-
-- [ ] Investigate optional EPUB chapter mapping through `nav.json`.
-- [ ] Preserve page grouping for books without navigation data.
-- [ ] Add automated tests for malformed data and deleted items.
-- [ ] Test YAML escaping, filename collisions, and duplicate prevention.
-- [ ] Test preservation of user-written content.
-- [ ] Add screenshots and update documentation.
-- [ ] Verify lint, production builds, and release artifacts.
 
 ## Release instructions
 
