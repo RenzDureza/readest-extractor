@@ -78,8 +78,7 @@ Books/
 └── <bookHash>/
     ├── config.json
     ├── cover.png
-    ├── nav.json        # Optional
-    └── original ebook
+    └── ebook.epub
 ```
 
 ## Privacy and safety
