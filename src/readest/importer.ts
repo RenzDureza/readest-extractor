@@ -1,5 +1,6 @@
 import { ReadestLibraryReader } from './library-reader';
-import { ImportedBook, ReadestBookConfig } from './types';
+import { normalizeReadestBook, parseReadestBook } from './normalizer';
+import type { ImportedBook } from './types';
 
 export interface ReadestImportResult {
 	books: ImportedBook[];
@@ -12,15 +13,38 @@ export class ReadestImporter {
 	constructor(private readonly reader: ReadestLibraryReader) {}
 
 	async importBooks(): Promise<ReadestImportResult> {
-		const books = await this.reader.getBooks();
+		const entries = await this.reader.getBooks();
 		const importedBooks: ImportedBook[] = [];
 
+		let activeBookCount = 0;
 		let missingConfigCount = 0;
 		let failedBookCount = 0;
 
-		for (const book of books) {
+		for (const [index, entry] of entries.entries()) {
+			if (
+				typeof entry === 'object' &&
+				entry !== null &&
+				'deletedAt' in entry &&
+				entry.deletedAt != null
+			) {
+				continue;
+			}
+
+			activeBookCount += 1;
+
+			let title =
+				typeof entry === 'object' &&
+				entry !== null &&
+				'title' in entry &&
+				typeof entry.title === 'string'
+					? entry.title
+					: `Library entry ${index + 1}`;
+
 			try {
-				let config: ReadestBookConfig | undefined;
+				const book = parseReadestBook(entry);
+				title = book.title;
+
+				let config: unknown = undefined;
 
 				try {
 					config = await this.reader.getBookConfig(book);
@@ -37,58 +61,20 @@ export class ReadestImporter {
 					missingConfigCount += 1;
 				}
 
-				const annotations = (config?.booknotes ?? [])
-					.filter((annotation) => annotation.deletedAt == null)
-					.map((annotation) => ({
-						id: annotation.id,
-						text: annotation.text,
-						note: annotation.note ?? '',
-						page: annotation.page,
-						cfi: annotation.cfi,
-						color: annotation.color,
-						style: annotation.style,
-						createdAt: annotation.createdAt,
-						updatedAt: annotation.updatedAt,
-					}));
-
-				const rawProgress = config?.progress ?? book.progress;
-				const rawAuthors = book.metadata?.author ?? book.author;
-
-				const authors = Array.isArray(rawAuthors)
-					? rawAuthors
-					: rawAuthors
-						? [rawAuthors]
-						: [];
-
-				const importedBook: ImportedBook = {
-					bookHash: book.hash,
-					metaHash: book.metaHash,
-					title: book.title,
-					authors,
-					format: book.format,
-					published: book.metadata?.published,
-					publisher: book.metadata?.publisher,
-					description: book.metadata?.description,
-					progress: rawProgress
-						? {
-								current: rawProgress[0],
-								total: rawProgress[1],
-							}
-						: undefined,
-					annotations,
-				};
-				importedBooks.push(importedBook);
+				importedBooks.push(normalizeReadestBook(book, config));
 			} catch (error) {
 				failedBookCount += 1;
+
 				console.warn(
-					`[Readest Extractor] Could not scan "${book.title}" (${book.hash}).`,
+					`[Readest Extractor] Could not scan "${title}" (library entry ${index + 1}).`,
 					error,
 				);
 			}
 		}
+
 		return {
 			books: importedBooks,
-			activeBookCount: books.length,
+			activeBookCount,
 			missingConfigCount,
 			failedBookCount,
 		};
