@@ -1,13 +1,10 @@
 import { Notice, Plugin } from 'obsidian';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
 import { ReadestLibraryReader } from './readest/library-reader';
 import { ReadestImporter } from './readest/importer';
-import { renderBookNote } from './markdown/book-renderer';
-import { BookNoteWriter } from './obsidian/book-note-writer';
+import { DEFAULT_SETTINGS } from './settings';
 
 export default class ReadestExtractorPlugin extends Plugin {
-	async onload(): Promise<void> {
+	onload(): void {
 		this.addCommand({
 			id: 'scan-readest-library',
 			name: 'Scan Readest library',
@@ -18,59 +15,40 @@ export default class ReadestExtractorPlugin extends Plugin {
 	}
 
 	private async scanReadestLibrary(): Promise<void> {
-		const libraryPath = join(
-			homedir(),
-			'.local',
-			'share',
-			'com.bilingify.readest',
-			'Readest',
-			'Books',
+		const reader = new ReadestLibraryReader(
+			DEFAULT_SETTINGS.readestLibraryPath,
 		);
-
-		const reader = new ReadestLibraryReader(libraryPath);
 		const importer = new ReadestImporter(reader);
 
 		try {
-			const books = await importer.importBooks();
+			const result = await importer.importBooks();
 
-			if (books.length === 0) {
-				new Notice('No Readest books found.');
-				return;
-			}
-
-			const writer = new BookNoteWriter(
-				this.app.vault,
-				this.app.metadataCache,
+			const annotationCount = result.books.reduce(
+				(total, book) => total + book.annotations.length,
+				0,
 			);
 
-			for (const book of books) {
-				try {
-					const markdown = renderBookNote(book);
-					const createdFile = await writer.createBookNote(
-						book,
-						markdown,
-					);
-					// console.log(renderBookNote(book));
+			const summary = [
+				`Readest scan: ${result.activeBookCount} active books`,
+				`${result.books.length} scanned successfully`,
+				`${annotationCount} active annotations read`,
+				`${result.missingConfigCount} missing configurations`,
+				`${result.failedBookCount} failed books`,
+			].join('; ');
 
-					if (createdFile) {
-						new Notice(`Created ${createdFile.path}`);
-					} else {
-						new Notice(`A note for ${book.title} already exists.`);
-					}
-				} catch (error) {
-					console.warn(
-						`[Readest Extractor] Could not read ${book.title}`,
-						error,
-					);
-				}
-			}
+			const errorHint =
+				result.failedBookCount > 0
+					? ' See the developer console for details.'
+					: '';
+
+			new Notice(`${summary}.${errorHint}`, 10000);
 		} catch (error) {
-			console.error('[Readest Extractor] Library scan failed', error);
+			console.error('[Readest Extractor] Library scan failed.', error);
 
 			const message =
 				error instanceof Error ? error.message : 'Unknown error';
 
-			new Notice(`Readest scan failed: ${message}`);
+			new Notice(`Readest scan failed: ${message}`, 10000);
 		}
 	}
 }
