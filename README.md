@@ -52,9 +52,6 @@ _Screenshots will be added as the corresponding features become available._
     └── styles.css
     ```
 
-    Include `styles.css` if present. If the repository is already in this plugin
-    directory, no copy is necessary.
-
 6. Reload Obsidian.
 7. Enable **Readest Extractor** under **Settings → Community plugins**.
 
