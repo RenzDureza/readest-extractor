@@ -1,92 +1,177 @@
-# Obsidian Sample Plugin
+# Readest Extractor
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+An Obsidian plugin being developed to turn a local Readest ebook library into book notes containing metadata, reading progress, covers, highlights, and annotations.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+- [Screenshots](#screenshots)
+- [Getting started](#getting-started)
+- [Usage](#usage)
+- [Privacy and safety](#privacy-and-safety)
+- [Development roadmap](#development-roadmap)
+- [Release instructions](#release-instructions)
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
+## Screenshots
 
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
+_Screenshots will be added as the corresponding features become available._
 
-## First time developing plugins?
+- [ ] Scan command in the Obsidian command palette.
+- [ ] Completed scan summary.
+- [ ] Generated book note with metadata and annotations.
+- [ ] Book cover embedded in a note.
+- [ ] Plugin settings tab.
 
-Quick starting guide for new plugin devs:
+## Getting started
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+### Requirements
 
-## Releasing new releases
+- Desktop Obsidian.
+- A local Readest library.
+- npm.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### Build and install
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+1. Obtain the project source.
+2. Open a terminal in the project root.
+3. Install dependencies:
 
-## Adding your plugin to the community plugin list
+    ```sh
+    npm install
+    ```
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+4. Create a production build:
 
-## How to use
+    ```sh
+    npm run build
+    ```
 
-- Clone this repo.
-- Make sure your NodeJS is at least v18 (`node --version`).
-- `npm i` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+5. Place these files inside your vault:
 
-## Manually installing the plugin
+    ```text
+    <Vault>/.obsidian/plugins/readest-extractor/
+    ├── main.js
+    ├── manifest.json
+    └── styles.css
+    ```
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+    Include `styles.css` if present. If the repository is already in this plugin
+    directory, no copy is necessary.
 
-## Improve code quality with eslint
+6. Reload Obsidian.
+7. Enable **Readest Extractor** under **Settings → Community plugins**.
 
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+## Usage
 
-## Funding URL
+### Scan your Readest library
 
-You can include funding URLs where people who use your plugin can financially support it.
+1. Confirm that your Readest library exists at the configured location.
+2. Open Obsidian's command palette.
+3. Select **Readest Extractor: Scan Readest library**.
+4. Read the summary notice.
+5. If any books failed, inspect the developer console for messages beginning
+   with `[Readest Extractor]`.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+Expected Readest directory structure:
 
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
-}
+```text
+Books/
+├── library.json
+├── library.json.bak
+└── <bookHash>/
+    ├── config.json
+    ├── cover.png
+    ├── nav.json        # Optional
+    └── original ebook
 ```
 
-If you have multiple URLs, you can also do:
+## Privacy and safety
 
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
-```
+- The current scan operates locally without network requests or cloud services.
+- Node.js filesystem APIs read the external Readest library.
+- The scan does not modify the Readest library or the Obsidian vault.
+- Diagnostic messages can include book titles and hashes; review logs before
+  sharing them.
 
-## API Documentation
+## Development roadmap
 
-See https://docs.obsidian.md
+Checked items represent implemented foundations, not completion of every
+related phase.
+
+### Library scanning
+
+- [x] Define raw Readest interfaces.
+- [x] Read `library.json`.
+- [x] Exclude deleted books and annotations.
+- [x] Read per-book configuration files.
+- [x] Support missing configuration files.
+- [x] Isolate per-book failures.
+- [x] Provide a read-only scan command and one summary notice.
+- [x] Manually confirm scanning works without vault changes.
+
+### Normalization
+
+- [x] Introduce normalized book and annotation types.
+- [x] Combine basic library metadata with book configuration.
+- [x] Normalize books without annotations.
+- [ ] Populate languages and verify missing-field defaults.
+- [ ] Validate malformed data shapes and normalization edge cases.
+
+### Markdown rendering
+
+- [x] Add a pure Markdown renderer foundation.
+- [ ] Generate YAML properties safely.
+- [ ] Complete metadata and progress rendering.
+- [ ] Group annotations by page, with an unknown-location fallback.
+- [ ] Improve annotation reading order.
+- [ ] Render annotation notes and multiline highlights.
+- [ ] Add stable annotation block IDs.
+- [ ] Add generated-section markers and a personal writing area.
+
+### Safe note creation and import
+
+- [x] Add a create-only Vault API writer foundation.
+- [x] Add initial book-hash lookup and filename-collision checks.
+- [ ] Harden filename sanitization and collision reporting.
+- [ ] Add and test a single-book creation command.
+- [ ] Confirm repeated imports do not create duplicates.
+- [ ] Add the full library import command.
+- [ ] Report created, skipped, and failed counts.
+
+### Synchronization
+
+- [ ] Find existing notes by `readest_book_hash`.
+- [ ] Replace only the marked annotation section.
+- [ ] Preserve all content outside generated markers.
+- [ ] Reflect changed and deleted Readest annotations.
+- [ ] Safely skip notes with missing or ambiguous markers.
+- [ ] Verify personal writing survives repeated synchronization.
+
+### Settings and covers
+
+- [x] Define the default Linux Readest path.
+- [ ] Add settings UI and persistence.
+- [ ] Validate the configured library path.
+- [ ] Expand a user-entered leading `~`.
+- [ ] Configure output and cover folders.
+- [ ] Import covers through the Vault API.
+- [ ] Avoid duplicate cover files and handle missing covers.
+
+### Navigation, testing, and release
+
+- [ ] Investigate optional EPUB chapter mapping through `nav.json`.
+- [ ] Preserve page grouping for books without navigation data.
+- [ ] Add automated tests for malformed data and deleted items.
+- [ ] Test YAML escaping, filename collisions, and duplicate prevention.
+- [ ] Test preservation of user-written content.
+- [ ] Add screenshots and update documentation.
+- [ ] Verify lint, production builds, and release artifacts.
+
+## Release instructions
+
+For a future release:
+
+1. Run `npm run lint` and `npm run build`.
+2. Complete the manual checks in Obsidian.
+3. Update versions consistently in `manifest.json` and `package.json`.
+4. Update `versions.json` and confirm the minimum supported Obsidian version.
+5. Create a GitHub release tagged with the exact version, without a leading `v`.
+6. Attach `main.js`, `manifest.json`, and `styles.css` if present.
+7. Review Obsidian's developer policies and plugin guidelines before submission.
