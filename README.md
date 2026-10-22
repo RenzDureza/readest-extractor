@@ -33,24 +33,24 @@ _Screenshots will be added as the corresponding features become available._
 2. Open a terminal in the project root.
 3. Install dependencies:
 
-    ```sh
-    npm install
-    ```
+   ```sh
+   npm install
+   ```
 
 4. Create a production build:
 
-    ```sh
-    npm run build
-    ```
+   ```sh
+   npm run build
+   ```
 
 5. Place these files inside your vault:
 
-    ```text
-    <Vault>/.obsidian/plugins/readest-extractor/
-    ├── main.js
-    ├── manifest.json
-    └── styles.css
-    ```
+   ```text
+   <Vault>/.obsidian/plugins/readest-extractor/
+   ├── main.js
+   ├── manifest.json
+   └── styles.css
+   ```
 
 6. Reload Obsidian.
 7. Enable **Readest Extractor** under **Settings → Community plugins**.
@@ -113,8 +113,8 @@ related phase.
 ### Markdown rendering
 
 - [x] Add a pure Markdown renderer foundation.
-- [ ] Generate YAML properties safely.
-- [ ] Complete metadata and progress rendering.
+- [x] Generate YAML properties safely.
+- [x] Complete metadata and progress rendering.
 - [ ] Group annotations by page, with an unknown-location fallback.
 - [ ] Improve annotation reading order.
 - [ ] Render annotation notes and multiline highlights.
