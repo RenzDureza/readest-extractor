@@ -11,9 +11,9 @@ An Obsidian plugin being developed to turn a local Readest ebook library into bo
 
 ## Screenshots
 
-_Screenshots will be added as the corresponding features become available._
+![Scan Command](media/scan-command.gif)
+_Scan command in the Obsidian command palette._
 
-- [ ] Scan command in the Obsidian command palette.
 - [ ] Completed scan summary.
 - [ ] Generated book note with metadata and annotations.
 - [ ] Book cover embedded in a note.
