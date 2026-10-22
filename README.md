@@ -107,8 +107,8 @@ related phase.
 - [x] Introduce normalized book and annotation types.
 - [x] Combine basic library metadata with book configuration.
 - [x] Normalize books without annotations.
-- [ ] Populate languages and verify missing-field defaults.
-- [ ] Validate malformed data shapes and normalization edge cases.
+- [x] Verify missing-field defaults.
+- [x] Validate malformed data shapes and normalization edge cases.
 
 ### Markdown rendering
 
