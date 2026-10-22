@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import { ReadestBook, ReadestBookConfig } from './types';
+import { ReadestBook } from './types';
 
 export class ReadestLibraryReader {
 	constructor(private readonly libraryPath: string) {}
@@ -15,10 +15,10 @@ export class ReadestLibraryReader {
 			throw new Error('Readest library.json is not an array.');
 		}
 
-		return (data as ReadestBook[]).filter((book) => book.deletedAt == null);
+		return data;
 	}
 
-	async getBookConfig(book: ReadestBook): Promise<ReadestBookConfig> {
+	async getBookConfig(book: ReadestBook): Promise<unknown> {
 		const configFile = path.join(
 			this.libraryPath,
 			book.hash,
@@ -26,7 +26,9 @@ export class ReadestLibraryReader {
 		);
 
 		const content = await readFile(configFile, 'utf8');
-		return JSON.parse(content) as ReadestBookConfig;
+		const data: unknown = JSON.parse(content);
+
+		return data;
 	}
 
 	async getBookCover(book: ReadestBook): Promise<string> {
