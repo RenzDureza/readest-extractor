@@ -1,4 +1,4 @@
-import { ImportedBook } from "../readest/types";
+import { ImportedAnnotation, ImportedBook } from "../readest/types";
 
 function yamlString(value: string): string {
   return JSON.stringify(value)
@@ -27,6 +27,44 @@ function publicationDate(value: string | undefined): string | undefined {
   }
 
   return parsed.toISOString().slice(0, 10) === date ? date : undefined;
+}
+
+function groupAnnotationsByPage(
+  annotations: readonly ImportedAnnotation[],
+): Array<[number | undefined, ImportedAnnotation[]]> {
+  const groups = new Map<number | undefined, ImportedAnnotation[]>();
+
+  for (const annotation of annotations) {
+    const page =
+      typeof annotation.page === "number" &&
+      Number.isFinite(annotation.page) &&
+      annotation.page >= 0
+        ? annotation.page
+        : undefined;
+
+    const group = groups.get(page);
+
+    if (group) {
+      group.push(annotation);
+    } else {
+      groups.set(page, [annotation]);
+    }
+  }
+  return [...groups.entries()].sort(([left], [right]) => {
+    if (left === right) {
+      return 0;
+    }
+
+    if (left === undefined) {
+      return 1;
+    }
+
+    if (right === undefined) {
+      return -1;
+    }
+
+    return left - right;
+  });
 }
 
 export function renderBookNote(book: ImportedBook): string {
@@ -85,17 +123,43 @@ export function renderBookNote(book: ImportedBook): string {
   properties.push(`readest_book_hash: ${yamlString(book.bookHash)}`);
   addStringProperty("readest_meta_hash", book.metaHash);
 
-  const annotations = book.annotations
-    .map((annotation) => {
-      const page = annotation.page ?? "Unknown";
-      const text = annotation.text
-        .split("\n")
-        .map((line) => `> *"${line}"*`)
-        .join("\n");
+  const annotationGroups = groupAnnotationsByPage(book.annotations);
 
-      return `> [!quote] Page ${page}\n${text}`;
+  const annotations = annotationGroups
+    .map(([page, group]) => {
+      const location = page === undefined ? "Unknown location" : `Page ${page}`;
+
+      const passages = group
+        .map((annotation) => {
+          const text = annotation.text
+            .split("\n")
+            .map((line) => `> *"${line}"*`)
+            .join("\n");
+
+          return [
+            `> [!quote] ${location}`,
+            text,
+            "",
+            `<!-- READEST:ANNOTATION:${annotation.id} -->`,
+          ].join("\n");
+        })
+        .join("\n\n");
+
+      return [`### ${location}`, "", passages].join("\n");
     })
     .join("\n\n");
+
+  const personalNotes = annotationGroups
+    .flatMap(([, group]) => group)
+    .map((annotation) =>
+      [
+        `### Annotation ${inlineMarkdown(annotation.id)}`,
+        "",
+        "<!-- Write your personal notes below this comment. -->",
+        "",
+      ].join("\n"),
+    )
+    .join("\n");
 
   return [
     "---",
@@ -109,9 +173,18 @@ export function renderBookNote(book: ImportedBook): string {
     "",
     "***",
     "",
+    "<!-- READEST:ANNOTATIONS:START -->",
+    "",
     "## Annotations",
     "",
     annotations || "No annotations found.",
+    "",
+    "<!-- READEST:ANNOTATIONS:END -->",
+    "",
+    "## My annotation notes",
+    "",
+    personalNotes ||
+      "<!-- Personal sections will be added when annotations are available. -->",
     "",
     "***",
     "",
