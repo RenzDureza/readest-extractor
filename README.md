@@ -115,8 +115,8 @@ related phase.
 - [x] Add a pure Markdown renderer foundation.
 - [x] Generate YAML properties safely.
 - [x] Complete metadata and progress rendering.
-- [ ] Group annotations by page, with an unknown-location fallback.
-- [ ] Add generated-section markers and a personal writing area.
+- [x] Group annotations by page, with an unknown-location fallback.
+- [x] Add generated-section markers and a personal writing area.
 
 ### Safe note creation and import
 
