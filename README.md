@@ -122,7 +122,7 @@ related phase.
 
 - [x] Add a create-only Vault API writer foundation.
 - [x] Add initial book-hash lookup and filename-collision checks.
-- [ ] Harden filename sanitization and collision reporting.
+- [x] Harden filename sanitization and collision reporting.
 - [ ] Confirm repeated imports do not create duplicates.
 - [ ] Add the full library import command.
 - [ ] Report created, skipped, and failed counts.
