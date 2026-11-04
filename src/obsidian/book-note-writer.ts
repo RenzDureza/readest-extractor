@@ -1,6 +1,11 @@
 import { normalizePath, Vault, TFile, MetadataCache } from "obsidian";
 import { ImportedBook } from "../readest/types";
 
+type BookNoteWriteResult = {
+  status: "created" | "already-imported" | "filename-collision";
+  path: string;
+};
+
 export class BookNoteWriter {
   constructor(
     private readonly vault: Vault,
@@ -11,7 +16,7 @@ export class BookNoteWriter {
   async createBookNote(
     book: ImportedBook,
     content: string,
-  ): Promise<TFile | undefined> {
+  ): Promise<BookNoteWriteResult> {
     await this.ensureOutputFolder();
 
     const filename = this.sanitizeFilename(book.title);
@@ -24,15 +29,30 @@ export class BookNoteWriter {
         `[Readest Extractor] Book note already exists: ${existingBookNote.path}`,
       );
 
-      return undefined;
+      return {
+        status: "already-imported",
+        path: existingBookNote.path,
+      };
     }
 
     const existingFile = this.vault.getAbstractFileByPath(filePath);
     if (existingFile) {
-      console.info(`[Readest Extractor] Note already exists: ${filePath}`);
-      return undefined;
+      console.info(`[Readest Extractor] Filename Collision: \n
+        title: ${book.title}\n
+        path: ${filePath}\n
+        hash: ${book.bookHash}\n
+        Existing item left unchanged
+        `);
+      return {
+        status: "filename-collision",
+        path: filePath,
+      };
     }
-    return await this.vault.create(filePath, content);
+    await this.vault.create(filePath, content);
+    return {
+      status: "created",
+      path: filePath,
+    };
   }
 
   private async ensureOutputFolder(): Promise<void> {
