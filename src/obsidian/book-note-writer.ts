@@ -1,71 +1,108 @@
-import { normalizePath, Vault, TFile, MetadataCache } from 'obsidian';
-import { ImportedBook } from '../readest/types';
-import { fileURLToPath } from 'node:url';
+import { normalizePath, Vault, TFile, MetadataCache } from "obsidian";
+import { ImportedBook } from "../readest/types";
 
 export class BookNoteWriter {
-	constructor(
-		private readonly vault: Vault,
-		private readonly metadataCache: MetadataCache,
-		private readonly outputFolder = 'Books',
-	) {}
+  constructor(
+    private readonly vault: Vault,
+    private readonly metadataCache: MetadataCache,
+    private readonly outputFolder = "Books",
+  ) {}
 
-	async createBookNote(
-		book: ImportedBook,
-		content: string,
-	): Promise<TFile | undefined> {
-		await this.ensureOutputFolder();
+  async createBookNote(
+    book: ImportedBook,
+    content: string,
+  ): Promise<TFile | undefined> {
+    await this.ensureOutputFolder();
 
-		const filename = this.sanitizeFilename(book.title);
-		const filePath = normalizePath(`${this.outputFolder}/${filename}.md`);
-		const existingBookNote = this.findBookNote(book.bookHash);
-		// const existingAnnotation = this.findAnnotation(book.annotations[0]?.id);
+    const filename = this.sanitizeFilename(book.title);
+    const filePath = normalizePath(`${this.outputFolder}/${filename}.md`);
+    const existingBookNote = this.findBookNote(book.bookHash);
+    // const existingAnnotation = this.findAnnotation(book.annotations[0]?.id);
 
-		if (existingBookNote) {
-			console.info(
-				`[Readest Extractor] Book note already exists: ${existingBookNote.path}`,
-			);
+    if (existingBookNote) {
+      console.info(
+        `[Readest Extractor] Book note already exists: ${existingBookNote.path}`,
+      );
 
-			return undefined;
-		}
+      return undefined;
+    }
 
-		const existingFile = this.vault.getAbstractFileByPath(filePath);
-		if (existingFile) {
-			console.info(
-				`[Readest Extractor] Note already exists: ${filePath}`,
-			);
-			return undefined;
-		}
-		return await this.vault.create(filePath, content);
-	}
+    const existingFile = this.vault.getAbstractFileByPath(filePath);
+    if (existingFile) {
+      console.info(`[Readest Extractor] Note already exists: ${filePath}`);
+      return undefined;
+    }
+    return await this.vault.create(filePath, content);
+  }
 
-	private async ensureOutputFolder(): Promise<void> {
-		const folder = this.vault.getAbstractFileByPath(this.outputFolder);
+  private async ensureOutputFolder(): Promise<void> {
+    const folder = this.vault.getAbstractFileByPath(this.outputFolder);
 
-		if (!folder) {
-			await this.vault.createFolder(this.outputFolder);
-		}
-	}
+    if (!folder) {
+      await this.vault.createFolder(this.outputFolder);
+    }
+  }
 
-	private sanitizeFilename(title: string): string {
-		return title.replace(/[\\/:*?"<>|]/g, '-').trim();
-	}
+  private sanitizeFilename(title: string): string {
+    const cleanedTitle = title
+      .replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g, "-")
+      .trim()
+      .replace(/[ .]+$/g, "");
 
-	private findBookNote(bookHash: string): TFile | undefined {
-		const markdownFiles = this.vault.getMarkdownFiles();
+    if (!cleanedTitle) {
+      return "Untitled";
+    }
 
-		return markdownFiles.find((file) => {
-			const cache = this.metadataCache.getFileCache(file);
+    const nameBeforeDot = cleanedTitle.split(".")[0] ?? "";
 
-			return cache?.frontmatter?.readest_book_hash === bookHash;
-		});
-	}
+    if (
+      [
+        "CON",
+        "PRN",
+        "AUX",
+        "NUL",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "COM5",
+        "COM6",
+        "COM7",
+        "COM8",
+        "COM9",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "LPT4",
+        "LPT5",
+        "LPT6",
+        "LPT7",
+        "LPT8",
+        "LPT9",
+      ].includes(nameBeforeDot.toUpperCase())
+    ) {
+      return `_${cleanedTitle}`;
+    }
 
-	private findAnnotation(annotationId: string): TFile | undefined {
-		const markdownFiles = this.vault.getMarkdownFiles();
+    return cleanedTitle;
+  }
 
-		return markdownFiles.find((file) => {
-			const cache = this.metadataCache.getFileCache(file);
-			return cache?.frontmatter?.readest_book_hash === annotationId;
-		});
-	}
+  private findBookNote(bookHash: string): TFile | undefined {
+    const markdownFiles = this.vault.getMarkdownFiles();
+
+    return markdownFiles.find((file) => {
+      const cache = this.metadataCache.getFileCache(file);
+
+      return cache?.frontmatter?.readest_book_hash === bookHash;
+    });
+  }
+
+  private findAnnotation(annotationId: string): TFile | undefined {
+    const markdownFiles = this.vault.getMarkdownFiles();
+
+    return markdownFiles.find((file) => {
+      const cache = this.metadataCache.getFileCache(file);
+      return cache?.frontmatter?.readest_book_hash === annotationId;
+    });
+  }
 }
