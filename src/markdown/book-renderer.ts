@@ -137,10 +137,16 @@ export function renderBookNote(book: ImportedBook): string {
             .join("\n");
 
           return [
+            `<!-- READEST:ANNOTATION:${annotation.id}:START -->`,
             `> [!quote] ${location}`,
             text,
             "",
-            `<!-- READEST:ANNOTATION:${annotation.id} -->`,
+            `<!-- READEST:ANNOTATION:${annotation.id}:END -->`,
+            "",
+            "#### Personal notes:",
+            "",
+            "<!-- Write your personal notes below this comment. -->",
+            "",
           ].join("\n");
         })
         .join("\n\n");
@@ -148,18 +154,6 @@ export function renderBookNote(book: ImportedBook): string {
       return [`### ${location}`, "", passages].join("\n");
     })
     .join("\n\n");
-
-  const personalNotes = annotationGroups
-    .flatMap(([, group]) => group)
-    .map((annotation) =>
-      [
-        `### Annotation ${inlineMarkdown(annotation.id)}`,
-        "",
-        "<!-- Write your personal notes below this comment. -->",
-        "",
-      ].join("\n"),
-    )
-    .join("\n");
 
   return [
     "---",
@@ -173,18 +167,9 @@ export function renderBookNote(book: ImportedBook): string {
     "",
     "***",
     "",
-    "<!-- READEST:ANNOTATIONS:START -->",
-    "",
     "## Annotations",
     "",
     annotations || "No annotations found.",
-    "",
-    "<!-- READEST:ANNOTATIONS:END -->",
-    "",
-    "## My annotation notes",
-    "",
-    personalNotes ||
-      "<!-- Personal sections will be added when annotations are available. -->",
     "",
     "***",
     "",
