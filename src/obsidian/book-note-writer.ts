@@ -30,8 +30,15 @@ export class BookNoteWriter {
 
     const filename = this.sanitizeFilename(book.title);
     const filePath = normalizePath(`${this.outputFolder}/${filename}.md`);
-    const existingBookNote = this.findBookNote(book.bookHash);
-    // const existingAnnotation = this.findAnnotation(book.annotations[0]?.id);
+    const existingBookNotes = this.findBookNotes(book.bookHash);
+
+    if (existingBookNotes.length > 1) {
+      throw new Error(
+        "[Readest Extractor] Multiple notes share this book hash",
+      );
+    }
+
+    const existingBookNote = existingBookNotes[0];
 
     if (existingBookNote) {
       return {
@@ -110,10 +117,10 @@ export class BookNoteWriter {
     return cleanedTitle;
   }
 
-  private findBookNote(bookHash: string): TFile | undefined {
+  private findBookNotes(bookHash: string): TFile[] {
     const markdownFiles = this.vault.getMarkdownFiles();
 
-    return markdownFiles.find((file) => {
+    return markdownFiles.filter((file) => {
       const cache = this.metadataCache.getFileCache(file);
 
       return cache?.frontmatter?.readest_book_hash === bookHash;

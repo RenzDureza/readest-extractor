@@ -132,7 +132,7 @@ related phase.
 
 ### Synchronization
 
-- [ ] Find existing notes by `readest_book_hash`.
+- [x] Find existing notes by `readest_book_hash`.
 - [ ] Replace only the marked annotation section.
 - [ ] Preserve all content outside generated markers.
 - [ ] Reflect changed and deleted Readest annotations.
