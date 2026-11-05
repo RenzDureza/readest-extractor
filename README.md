@@ -123,9 +123,12 @@ related phase.
 - [x] Add a create-only Vault API writer foundation.
 - [x] Add initial book-hash lookup and filename-collision checks.
 - [x] Harden filename sanitization and collision reporting.
-- [ ] Confirm repeated imports do not create duplicates.
-- [ ] Add the full library import command.
-- [ ] Report created, skipped, and failed counts.
+- [x] Confirm repeated imports do not create duplicates.
+- [x] Add the full library import command.
+- [x] Report created, skipped, and failed counts.
+
+> [!notice]
+> Import creates new notes in the vault without overwritting existing items or modify Readest
 
 ### Synchronization
 

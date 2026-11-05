@@ -7,6 +7,7 @@ type BookNoteWriteResult = {
 };
 
 export class BookNoteWriter {
+  private readonly createdNotes: Map<string, string> = new Map();
   constructor(
     private readonly vault: Vault,
     private readonly metadataCache: MetadataCache,
@@ -17,6 +18,14 @@ export class BookNoteWriter {
     book: ImportedBook,
     content: string,
   ): Promise<BookNoteWriteResult> {
+    const rememberedPath = this.createdNotes.get(book.bookHash);
+    if (rememberedPath) {
+      return {
+        status: "already-imported",
+        path: rememberedPath,
+      };
+    }
+
     await this.ensureOutputFolder();
 
     const filename = this.sanitizeFilename(book.title);
@@ -25,10 +34,6 @@ export class BookNoteWriter {
     // const existingAnnotation = this.findAnnotation(book.annotations[0]?.id);
 
     if (existingBookNote) {
-      console.info(
-        `[Readest Extractor] Book note already exists: ${existingBookNote.path}`,
-      );
-
       return {
         status: "already-imported",
         path: existingBookNote.path,
@@ -37,18 +42,15 @@ export class BookNoteWriter {
 
     const existingFile = this.vault.getAbstractFileByPath(filePath);
     if (existingFile) {
-      console.info(`[Readest Extractor] Filename Collision: \n
-        title: ${book.title}\n
-        path: ${filePath}\n
-        hash: ${book.bookHash}\n
-        Existing item left unchanged
-        `);
       return {
         status: "filename-collision",
         path: filePath,
       };
     }
+
     await this.vault.create(filePath, content);
+    this.createdNotes.set(book.bookHash, filePath);
+
     return {
       status: "created",
       path: filePath,
@@ -65,6 +67,7 @@ export class BookNoteWriter {
 
   private sanitizeFilename(title: string): string {
     const cleanedTitle = title
+      // eslint-disable-next-line no-control-regex -- basta
       .replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g, "-")
       .trim()
       .replace(/[ .]+$/g, "");
